@@ -1,0 +1,292 @@
+# This file is copied to ~/spec when you run 'ruby script/generate rspec'
+# from the project root directory.
+ENV["RAILS_ENV"] ||= 'test'
+require File.expand_path("../../config/environment", __FILE__)
+require 'rspec/rails'
+require 'cover_me'
+
+# Uncomment the next line to use webrat's matchers
+#require 'webrat/integrations/rspec-rails'
+
+# Requires supporting files with custom matchers and macros, etc,
+# in ./support/ and its subdirectories.
+Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
+
+RSpec.configure do |config|
+  # If you're not using ActiveRecord you should remove these
+  # lines, delete config/database.yml and disable :active_record
+  # in your config/boot.rb
+  config.use_transactional_fixtures = true
+  config.use_instantiated_fixtures  = false
+  config.fixture_path = File.join(Rails.root, '/spec/fixtures/')
+
+  # == Fixtures
+  #
+  # You can declare fixtures for each example_group like this:
+  #   describe "...." do
+  #     fixtures :table_a, :table_b
+  #
+  # Alternatively, if you prefer to declare them only once, you can
+  # do so right here. Just uncomment the next line and replace the fixture
+  # names with your fixtures.
+  #
+  # config.global_fixtures = :table_a, :table_b
+  #
+  # If you declare global fixtures, be aware that they will be declared
+  # for all of your examples, even those that don't use them.
+  #
+  # You can also declare which fixtures to use (for example fixtures for test/fixtures):
+  #
+  # config.fixture_path = Rails.root + '/spec/fixtures/'
+  #
+  # == Mock Framework
+  #
+  # RSpec uses it's own mocking framework by default. If you prefer to
+  # use mocha, flexmock or RR, uncomment the appropriate line:
+  #
+  # config.mock_with :mocha
+  # config.mock_with :flexmock
+  # config.mock_with :rr
+  config.mock_with :rspec
+  #
+  # == Notes
+  #
+  # For more information take a look at Spec::Runner::Configuration and Spec::Runner
+  config.before(:each) do
+    Country.delete_all
+    # ActiveRecord::Base.connection.execute("INSERT INTO countries (id, name, short_name) VALUES (95, 'US', 'US')")
+    # ActiveRecord::Base.connection.execute("INSERT INTO countries (id, name, short_name) VALUES (11, 'Canada', 'CA')")
+    setup_countries
+
+    # +----+--------------+------------+
+    # | id | name         | short_name |
+    # +----+--------------+------------+
+    # | 84 | Sweden       | SE         |
+    # | 85 | Switzerland  | CH         |
+    # | 92 | Ukraine      | UA         |
+    # +----+--------------+------------+
+
+  end
+
+  config.before(:each, :type => :controller) do
+    # restore
+    AccessLevel.delete_all
+
+    queries = []
+    # Access Levels
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (1, 'other')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (5, 'not_logged_in')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (10, 'pro_legacy')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (20, 'pro_monthly')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (30, 'pro_annual')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (40, 'enterprise')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (11, 'appdata_mobile_monthly')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (12, 'appdata_mobile_annual')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (14, 'appdata_htmlapps_monthly')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (15, 'appdata_htmlapps_annual')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (17, 'appdata_facebook_monthly')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (18, 'appdata_facebook_annual')"
+
+
+    queries.each do |q|
+      result = ActiveRecord::Base.connection.execute(q)
+    end
+
+
+
+
+
+
+
+    #
+    # AccessLevel.delete_all
+    # FactoryGirl.create(:access_level, :id => 1, :identifier => "other")
+    # FactoryGirl.create(:access_level, :id => 5, :identifier => "not_logged_in")
+    # FactoryGirl.create(:access_level, :id => 10, :identifier => "pro_legacy")
+    # FactoryGirl.create(:access_level, :id => 20, :identifier => "pro_monthly")
+    # FactoryGirl.create(:access_level, :id => 30, :identifier => "pro_annual")
+    # FactoryGirl.create(:access_level, :id => 40, :identifier => "enterprise")
+    # FactoryGirl.create(:access_level, :id => 11, :identifier => "appdata_mobile_monthly")
+    # FactoryGirl.create(:access_level, :id => 12, :identifier => "appdata_mobile_annual")
+    # FactoryGirl.create(:access_level, :id => 14, :identifier => "appdata_htmlapps_monthly")
+    # FactoryGirl.create(:access_level, :id => 15, :identifier => "appdata_htmlapps_annual")
+
+    # queries = []
+    # # Access Levels
+    # queries << "INSERT INTO access_levels (id, identifier) VALUES (1, 'other')"
+    # queries << "INSERT INTO access_levels (id, identifier) VALUES (5, 'not_logged_in')"
+    # queries << "INSERT INTO access_levels (id, identifier) VALUES (10, 'pro_legacy')"
+    # queries << "INSERT INTO access_levels (id, identifier) VALUES (20, 'pro_monthly')"
+    # queries << "INSERT INTO access_levels (id, identifier) VALUES (30, 'pro_annual')"
+    # queries << "INSERT INTO access_levels (id, identifier) VALUES (40, 'enterprise')"
+    # queries << "INSERT INTO access_levels (id, identifier) VALUES (11, 'appdata_mobile_monthly')"
+    # queries << "INSERT INTO access_levels (id, identifier) VALUES (12, 'appdata_mobile_annual')"
+    # queries << "INSERT INTO access_levels (id, identifier) VALUES (14, 'appdata_htmlapps_monthly')"
+    # queries << "INSERT INTO access_levels (id, identifier) VALUES (15, 'appdata_htmlapps_annual')"
+    #
+    #
+    # queries.each do |q|
+    #   result = ActiveRecord::Base.connection.execute(q)
+    # end
+  end
+
+  # restore
+  config.before(:each, :type => :view) do
+    AccessLevel.delete_all
+
+    queries = []
+    # Access Levels
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (1, 'other')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (5, 'not_logged_in')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (10, 'pro_legacy')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (20, 'pro_monthly')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (30, 'pro_annual')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (40, 'enterprise')"
+
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (11, 'appdata_mobile_monthly')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (12, 'appdata_mobile_annual')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (14, 'appdata_htmlapps_monthly')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (15, 'appdata_htmlapps_annual')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (17, 'appdata_facebook_monthly')"
+    queries << "INSERT INTO access_levels (id, identifier) VALUES (18, 'appdata_facebook_annual')"
+
+
+    queries.each do |q|
+      result = ActiveRecord::Base.connection.execute(q)
+    end
+  end
+
+end
+
+require 'authlogic/test_case'
+
+module LoginHelper
+include Authlogic::TestCase
+
+  def logout_as_user()
+    activate_authlogic
+  end
+
+  def login_as_user(options = {})
+    activate_authlogic
+    #options = {:status => 'active', :initiated => true}.merge(options)
+    options.merge!(:is_app_data_pro => true)
+    @user = Factory(:user, options)
+    UserSession.create @user
+  end
+
+  def login_as_specific_user(user = Factory(:user))
+    activate_authlogic
+    UserSession.create user
+  end
+
+  def login_as_admin_user(options = {})
+    activate_authlogic
+    #options = {:status => 'active', :initiated => true}.merge(options)
+    options.merge!(:is_admin => true)
+    @user =  Factory(:user, options)
+    UserSession.create @user
+  end
+
+  def login_as_sjohnson_admin_user(options = {})
+    activate_authlogic
+    #options = {:status => 'active', :initiated => true}.merge(options)
+    options.merge!(:is_admin => true, :id => 1)
+    @user =  Factory(:user, options)
+    UserSession.create @user
+  end
+end
+include LoginHelper
+
+
+# class ActionController::TestCase
+#   setup :activate_authlogic
+# end
+#
+#
+# def login_as_user(options = {})
+#   activate_authlogic
+#   #options = {:status => 'active', :initiated => true}.merge(options)
+#   options.merge!(:is_app_data_pro => true)
+#   @user = Factory(:user, options)
+#   UserSession.create @user
+# end
+#
+# def login_as_admin_user(options = {})
+#   activate_authlogic
+#   #options = {:status => 'active', :initiated => true}.merge(options)
+#   options.merge!(:is_admin => true)
+#   @user =  Factory(:user, options)
+#   UserSession.create @user
+# end
+#
+# def login_as_sjohnson_admin_user(options = {})
+#   activate_authlogic
+#   #options = {:status => 'active', :initiated => true}.merge(options)
+#   options.merge!(:is_admin => true, :id => 1)
+#   @user =  Factory(:user, options)
+#   UserSession.create @user
+# end
+#
+# include AuthlogicTestHelper
+
+def user_for_capybara(options = {})
+  if options[:is_admin]
+    @user = Factory(:user, is_admin: true)
+  elsif options[:is_developer_or_product_manager]
+    @user = User.where(id: 1).first || Factory(:user, id: 1)
+  else
+    @user = Factory(:user)
+  end
+
+  access_level = options[:access_level] || 40
+  @authorization_cache = Factory(:authorization_cache, :created_at => Date.today - 10, :user => @user)
+  auth_cache_attributes = {:access_levels => [access_level]}
+  @user.authorization_cache.update_attributes(auth_cache_attributes)
+  unless AccessLevel.where(id: access_level).first
+    FactoryGirl.create(:access_level, :id => access_level, :identifier => "enterprise")
+  end
+  @user
+end
+
+def login_user(access_level)
+  @user = user_for_capybara(access_level: access_level)
+  visit login_path
+  fill_in 'user_session_username', with: @user.email
+  fill_in 'user_session_password', with: @user.password
+  click_button 'Submit'
+end
+
+def login_user_as_admin
+  @user = user_for_capybara(is_admin: 1)
+  visit login_path
+  fill_in 'user_session_username', with: @user.email
+  fill_in 'user_session_password', with: @user.password
+  click_button 'Submit'
+end
+
+def login_user_as_developer_or_product_manager
+  @user = user_for_capybara(is_developer_or_product_manager: true)
+  visit login_path
+  fill_in 'user_session_username', with: @user.email
+  fill_in 'user_session_password', with: @user.password
+  click_button 'Submit'
+end
+
+def rand_num
+  rand(100000000)
+end
+
+require 'cache'
+include Cache
+
+def clear_cache
+  cache = get_mem_cache
+  begin
+    cache.clear
+  rescue Exception => e
+  end
+end
+
+require 'spec_common_methods'
+include SpecCommonMethods
